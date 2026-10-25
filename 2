@@ -1,0 +1,37 @@
+// videoDatabase.ts
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from "firebase/firestore";
+
+import { db } from "./firebase";
+
+export interface VideoData {
+  userId: string;
+  videoUrl: string;
+  description: string;
+  category: string;
+}
+
+export async function saveVideo(
+  video: VideoData
+): Promise<string> {
+  if (!video.userId || !video.videoUrl) {
+    throw new Error("Brakuje danych filmu.");
+  }
+
+  const docRef = await addDoc(
+    collection(db, "videos"),
+    {
+      userId: video.userId,
+      videoUrl: video.videoUrl,
+      description: video.description,
+      category: video.category,
+      likes: 0,
+      createdAt: serverTimestamp()
+    }
+  );
+
+  return docRef.id;
+}
