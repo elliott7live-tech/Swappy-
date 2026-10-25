@@ -1,0 +1,14 @@
+<?php
+header('Content-Type: application/json');
+header("Access-Control-Allow-Origin: *");
+
+$baza_pliki = 'baza_filmow.json';
+
+if (file_exists($baza_pliki)) {
+    // Pokazujemy wszystkim użytkownikom zapisaną listę filmów
+    echo file_get_contents($baza_pliki);
+} else {
+    // Jeśli nikt nic jeszcze nie dodał, wysyłamy pustą listę
+    echo json_encode([]);
+}
+?>
