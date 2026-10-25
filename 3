@@ -1,0 +1,54 @@
+// recommendations.ts
+
+export interface Video {
+  id: string;
+  category: string;
+  likes: number;
+  createdAt?: number;
+}
+
+export interface Interests {
+  [category: string]: number;
+}
+
+export function rankVideos(
+  videos: Video[],
+  interests: Interests
+): Video[] {
+  return [...videos].sort((a, b) => {
+    const scoreA =
+      (interests[a.category] ?? 0) +
+      Math.log1p(a.likes) * 0.2;
+
+    const scoreB =
+      (interests[b.category] ?? 0) +
+      Math.log1p(b.likes) * 0.2;
+
+    if (scoreA !== scoreB) {
+      return scoreB - scoreA;
+    }
+
+    return (
+      (b.createdAt ?? 0) -
+      (a.createdAt ?? 0)
+    );
+  });
+}
+
+export function recordInterest(
+  interests: Interests,
+  category: string,
+  action: "watched" | "liked" | "skipped"
+): Interests {
+  const points = {
+    watched: 1,
+    liked: 5,
+    skipped: -2
+  };
+
+  return {
+    ...interests,
+    [category]:
+      (interests[category] ?? 0) + points[action]
+  };
+}
