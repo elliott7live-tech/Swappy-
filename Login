@@ -1,0 +1,22 @@
+
+export async function loginWithGoogle() {
+  if (!window.firebaseAuth || !window.firebaseGoogleProvider) {
+    alert(
+      "Logowanie Google nie jest jeszcze skonfigurowane. " +
+      "Potrzebna jest konfiguracja Firebase w Swappy."
+    );
+    return null;
+  }
+
+  try {
+    const result = await window.firebaseAuth.signInWithPopup(
+      window.firebaseGoogleProvider
+    );
+
+    return result.user;
+  } catch (error) {
+    console.error("Błąd logowania Google:", error);
+    alert("Nie udało się zalogować przez Google: " + error.message);
+    return null;
+  }
+}
