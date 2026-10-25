@@ -1,0 +1,43 @@
+// 1. Łączymy kod z elementami na ekranie
+const obrazekAvatar = document.getElementById('podglad-avatar');
+const wejsciePliku = document.getElementById('wybierz-plik');
+
+// 2. Gdy ktoś kliknie w obrazek, udajemy kliknięcie w ukryty wybierak plików
+obrazekAvatar.addEventListener('click', () => {
+    wejsciePliku.click();
+});
+
+// 3. Gdy użytkownik wybierze już zdjęcie ze swojego telefonu
+wejsciePliku.addEventListener('change', function() {
+    const wybranyPlik = this.files[0];
+    
+    if (wybranyPlik) {
+        // Pokazujemy wybrane zdjęcie na ekranie od razu (podgląd)
+        obrazekAvatar.src = URL.createObjectURL(wybranyPlik);
+        
+        // Przygotowujemy plik do wysyłki internetowej
+        const daneDoWysylki = new FormData();
+        daneDoWysylki.append('avatar', wybranyPlik);
+        
+        // Zastąp poniższy adres URL swoim prawdziwym adresem domeny, gdzie masz logowanie!
+        const adresTwojegoSerwera = 'https://twojanazwa.pl';
+        
+        // 4. Wysyłamy plik na Twój serwer za pomocą funkcji fetch
+        fetch(adresTwojegoSerwera, {
+            method: 'POST',
+            body: daneDoWysylki
+        })
+        .then(odpowiedz => odpowiedz.json())
+        .then(wynik => {
+            if(wynik.status === 'sukces') {
+                alert('Zdjęcie profilowe zostało zapisane na serwerze Swappy!');
+            } else {
+                alert('Błąd serwera: ' + wynik.wiadomosc);
+            }
+        })
+        .catch(blad => {
+            console.error('Błąd połączenia z domeną:', blad);
+            alert('Nie udało się wysłać pliku na serwer.');
+        });
+    }
+});
