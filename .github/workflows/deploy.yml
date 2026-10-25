@@ -52,12 +52,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-### Krok 4 — zapisz plik
-1. Kliknij **Commit changes**.
-2. Jeśli pojawi się ponownie przycisk **Commit changes**, kliknij go jeszcze raz, aby zatwierdzić zapis.
 
-GitHub powinien wtedy rozpocząć budowanie aplikacji.
-
-**Ważne:** to jeszcze nie gwarantuje, że strona zadziała — trzeba będzie sprawdzić, czy projekt poprawnie się buduje i czy ma ustawioną właściwą ścieżkę.
-
-Napisz mi, gdy zapiszesz plik. 💙
