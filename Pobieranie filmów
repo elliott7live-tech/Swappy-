@@ -1,0 +1,72 @@
+// Zmień ten adres na swoją prawdziwą domenę, np. 'https://twojanazwa.pl'
+const ADRES_DOMENY = 'https://twojanazwa.pl'; 
+
+// 1. OBSŁUGA WYSYŁANIA FILMU
+document.getElementById('przycisk-wyslij').addEventListener('click', function() {
+    const plikWideo = document.getElementById('wideo-plik').files[0];
+    const opisWideo = document.getElementById('wideo-opis').value;
+    const statusTekst = document.getElementById('status-wysylki');
+
+    if (!plikWideo) {
+        alert('Najpierw wybierz jakiś film z telefonu!');
+        return;
+    }
+
+    statusTekst.innerText = "Wysyłanie filmu... Nie zamykaj aplikacji! ⏳";
+
+    const daneFormularza = new FormData();
+    daneFormularza.append('video', plikWideo);
+    daneFormularza.append('opis', opisWideo);
+
+    // Wysyłamy plik do skryptu PHP na Twojej domenie
+    fetch(ADRES_DOMENY + 'zapisz_film.php', {
+        method: 'POST',
+        body: daneFormularza
+    })
+    .then(odpowiedz => odpowiedz.json())
+    .then(wynik => {
+        if(wynik.status === 'sukces') {
+            statusTekst.innerText = "Film wysłany pomyślnie! 🎉";
+            document.getElementById('wideo-opis').value = ''; // czyszczenie opisu
+            ladujFilmyZSerwera(); // odświeżamy feed, żeby zobaczyć swój film
+        } else {
+            statusTekst.innerText = "Błąd: " + wynik.wiadomosc;
+        }
+    })
+    .catch(blad => {
+        console.error(blad);
+        statusTekst.innerText = "Nie udało się połączyć z serwerem domeny.";
+    });
+});
+
+// 2. AUTOMATYCZNE POBIERANIE I WYŚWIETLANIE FILMÓW DLA KAŻDEGO
+function ladujFilmyZSerwera() {
+    const feedKontener = document.getElementById('swappy-feed');
+    
+    fetch(ADRES_DOMENY + 'lista_filmow.php')
+    .then(odpowiedz => odpowiedz.json())
+    .then(filmy => {
+        feedKontener.innerHTML = ''; // czyszczenie starych filmów
+        
+        if (filmy.length === 0) {
+            feedKontener.innerHTML = '<p style="color: #aaa; text-align:center;">Brak filmów. Bądź pierwszy i dodaj coś!</p>';
+            return;
+        }
+
+        // Dla każdego filmu z serwera tworzymy odtwarzacz wideo
+        filmy.forEach(film => {
+            const wideoElement = document.createElement('div');
+            wideoElement.style = "background: #1c1c1c; padding: 10px; border-radius: 8px; border: 1px solid #333; color: white; font-family: sans-serif;";
+            wideoElement.innerHTML = `
+                <video src="${ADRES_DOMENY}${film.sciezka}" controls loop muted autoplay style="width: 100%; border-radius: 6px; max-height: 500px; object-fit: cover;"></video>
+                <p style="margin: 10px 0 0 0; font-size: 15px; font-weight: bold;">${film.opis}</p>
+                <span style="font-size: 11px; color: #888;">Dodano: ${film.data}</span>
+            `;
+            feedKontener.appendChild(wideoElement);
+        });
+    })
+    .catch(blad => console.error('Błąd pobierania feedu:', blad));
+}
+
+// Uruchamiamy ładowanie filmów od razu po włączeniu aplikacji
+ladujFilmyZSerwera();
