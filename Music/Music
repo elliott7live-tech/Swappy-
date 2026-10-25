@@ -1,0 +1,33 @@
+
+const MUSIC_API = "https://api.jamendo.com/v3.0/tracks/";
+
+export async function searchMusic(query) {
+  const term = query.trim();
+
+  if (!term) return [];
+
+  const params = new URLSearchParams({
+    format: "json",
+    limit: "20",
+    namesearch: term,
+    audioformat: "mp31",
+    order: "relevance",
+  });
+
+  const response = await fetch(`${MUSIC_API}?${params}`);
+
+  if (!response.ok) {
+    throw new Error("Nie udało się pobrać muzyki.");
+  }
+
+  const data = await response.json();
+
+  return (data.results || []).map((track) => ({
+    id: track.id,
+    title: track.name,
+    artist: track.artist_name,
+    preview: track.audio,
+    image: track.album_image,
+    source: "Jamendo",
+  }));
+}
