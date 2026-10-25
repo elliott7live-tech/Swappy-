@@ -1,0 +1,19 @@
+<!-- PANEL DO WYSYŁANIA NOWEGO FILMU -->
+<div id="panel-wysylania" style="background: #121212; color: white; padding: 20px; border-radius: 12px; font-family: sans-serif; max-width: 400px; margin: 20px auto; border: 1px solid #2f2f2f;">
+    <h3 style="margin-top: 0; color: #fe2c55;">Dodaj nowy film na Swappy 🚀</h3>
+    
+    <label style="display: block; margin-bottom: 8px;">Wybierz wideo z telefonu:</label>
+    <input type="file" id="wideo-plik" accept="video/*" style="margin-bottom: 15px; display: block; width: 100%;">
+    
+    <label style="display: block; margin-bottom: 8px;">Dodaj opis (np. #streetwear):</label>
+    <input type="text" id="wideo-opis" placeholder="Napisz coś o tym ubraniu..." style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; margin-bottom: 20px;">
+    
+    <button id="przycisk-wyslij" style="background: #fe2c55; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer;">Wyślij film na Swappy</button>
+    <p id="status-wysylki" style="color: #aaa; font-size: 14px; text-align: center; margin-top: 10px;"></p>
+</div>
+
+<!-- MIEJSCE, GDZIE WYŚWIETLĄ SIĘ FILMY WSZYSTKICH UŻYTKOWNIKÓW (FEED) -->
+<h2 style="text-align: center; font-family: sans-serif; color: white;">Najnowsze filmy na Swappy 👇</h2>
+<div id="swappy-feed" style="max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+    <!-- Tutaj JavaScript automatycznie wklei filmy pobrane z Twojej domeny -->
+</div>
