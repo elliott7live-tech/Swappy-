@@ -1,15 +1,105 @@
-<div id="panel-wysylania">
-    <h3>Dodaj nowy film na Swappy 🚀</h3>
-    
-    <p>Wybierz wideo z telefonu:</p>
-    <input type="file" id="wideo-plik" accept="video/*">
-    
-    <p>Dodaj opis (np. #streetwear):</p>
-    <input type="text" id="wideo-opis" placeholder="Napisz coś...">
-    
-    <button id="przycisk-wyslij">Wyślij film na Swappy</button>
-    <p id="status-wysylki"></p>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Swappy App</title>
+</head>
+<body style="background: #121212; color: white; font-family: sans-serif; padding: 20px;">
 
-<h2>Najnowsze filmy na Swappy 👇</h2>
-<div id="swappy-feed"></div>
+    <!-- PANEL DO WYSYŁANIA FILMU -->
+    <div id="panel-wysylania" style="max-width: 400px; margin: 0 auto; background: #1c1c1c; padding: 20px; border-radius: 8px; border: 1px solid #333;">
+        <h3 style="color: #fe2c55; margin-top: 0;">Dodaj nowy film na Swappy 🚀</h3>
+        
+        <p style="margin-bottom: 5px;">Wybierz wideo z telefonu:</p>
+        <input type="file" id="wideo-plik" accept="video/*" style="width: 100%; margin-bottom: 15px;">
+        
+        <p style="margin-bottom: 5px;">Dodaj opis (np. #streetwear):</p>
+        <input type="text" id="wideo-opis" placeholder="Napisz coś..." style="width: 100%; padding: 8px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; margin-bottom: 15px;">
+        
+        <button id="przycisk-wyslij" style="width: 100%; background: #fe2c55; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">Wyślij film na Swappy</button>
+        <p id="status-wysylki" style="color: #aaa; text-align: center; margin-top: 10px; font-size: 14px;"></p>
+    </div>
+
+    <!-- FEED Z FILMAMI -->
+    <h2 style="text-align: center; margin-top: 40px;">Najnowsze filmy na Swappy 👇</h2>
+    <div id="swappy-feed" style="max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;"></div>
+
+    <!-- SKRYPT DIZŁANIA (JAVASCRIPT) -->
+    <script>
+    // Tutaj wpisz adres swojej prawdziwej domeny!
+    const ADRES_DOMENY = 'https://twojanazwa.pl'; 
+
+    // 1. OBSŁUGA WYSYŁANIA FILMU
+    document.getElementById('przycisk-wyslij').addEventListener('click', function() {
+        const plikWejsciowy = document.getElementById('wideo-plik');
+        const opisWideo = document.getElementById('wideo-opis').value;
+        const statusTekst = document.getElementById('status-wysylki');
+
+        if (plikWejsciowy.files.length === 0) {
+            alert('Najpierw wybierz jakiś film z telefonu!');
+            return;
+        }
+
+        statusTekst.innerText = "Wysyłanie filmu... ⏳";
+
+        const daneFormularza = new FormData();
+        // Poprawione pobieranie pliku: files[0] pobiera pierwszy wybrany plik
+        daneFormularza.append('video', plikWejsciowy.files[0]);
+        daneFormularza.append('opis', opisWideo);
+
+        fetch(ADRES_DOMENY + 'zapisz_film.php', {
+            method: 'POST',
+            body: daneFormularza
+        })
+        .then(function(odpowiedz) { 
+            return odpowiedz.json(); 
+        })
+        .then(function(wynik) {
+            if(wynik.status === 'sukces') {
+                statusTekst.innerText = "Film wysłany pomyślnie! 🎉";
+                document.getElementById('wideo-opis').value = '';
+                ladujFilmyZSerwera();
+            } else {
+                statusTekst.innerText = "Błąd: " + wynik.wiadomosc;
+            }
+        })
+        .catch(function(blad) {
+            console.error(blad);
+            statusTekst.innerText = "Nie udało się połączyć z domeną.";
+        });
+    });
+
+    // 2. AUTOMATYCZNE POBIERANIE FILMÓW
+    function ladujFilmyZSerwera() {
+        const feedKontener = document.getElementById('swappy-feed');
+        
+        fetch(ADRES_DOMENY + 'lista_filmow.php')
+        .then(function(odpowiedz) { 
+            return odpowiedz.json(); 
+        })
+        .then(function(filmy) {
+            feedKontener.innerHTML = '';
+            
+            if (filmy.length === 0) {
+                feedKontener.innerHTML = '<p style="text-align: center; color: #aaa;">Brak filmów. Dodaj coś!</p>';
+                return;
+            }
+
+            filmy.forEach(function(film) {
+                const wideoElement = document.createElement('div');
+                wideoElement.style = "background: #1c1c1c; padding: 10px; border-radius: 8px; border: 1px solid #333;";
+                wideoElement.innerHTML = '<video src="' + ADRES_DOMENY + film.sciezka + '" controls loop muted autoplay style="width:100%; border-radius: 4px; max-height:400px; object-fit: cover;"></video><p style="margin: 10px 0 0 0; font-weight: bold;">' + film.opis + '</p>';
+                feedKontener.appendChild(wideoElement);
+            });
+        })
+        .catch(function(blad) { 
+            console.error('Błąd pobierania:', blad); 
+        });
+    }
+
+    // Uruchamiamy ładowanie filmów na starcie
+    ladujFilmyZSerwera();
+    </script>
+
+</body>
+</html>
