@@ -6,7 +6,9 @@ import {VitePWA} from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
   return {
-    plugins: [
+    base: '/Swappy-/',
+  return {
+  
       react(),
       tailwindcss(),
       VitePWA({
