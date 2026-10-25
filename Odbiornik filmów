@@ -1,0 +1,46 @@
+<?php
+// Włączamy przesyłanie danych w formacie JSON
+header('Content-Type: application/json');
+header("Access-Control-Allow-Origin: *"); // Pozwolenie aplikacji na łączenie się
+
+// 1. Tworzymy folder na filmy na serwerze, jeśli jeszcze nie istnieje
+$folder_na_filmy = 'filmy_swappy/';
+if (!file_exists($folder_na_filmy)) {
+    mkdir($folder_na_filmy, 0777, true);
+}
+
+// 2. Sprawdzamy, czy plik wideo dotarł na serwer
+if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK) {
+    $tymczasowa_sciezka = $_FILES['video']['tmp_name'];
+    $nazwa_pliku = time() . '_' . basename($_FILES['video']['name']); // unikalna nazwa filmu
+    $docelowa_sciezka = $folder_na_filmy . $nazwa_pliku;
+    $opis = isset($_POST['opis']) ? htmlspecialchars($_POST['opis']) : '';
+
+    // 3. Przenosimy film z pamięci tymczasowej do prawdziwego folderu na domenie
+    if (move_uploaded_file($tymczasowa_sciezka, $docelowa_sciezka)) {
+        
+        // Zapisujemy informację o nowym filmie do prostego pliku tekstowego (bazy danych w pliku)
+        $baza_pliki = 'baza_filmow.json';
+        $aktualne_filmy = [];
+        
+        if (file_exists($baza_pliki)) {
+            $aktualne_filmy = json_decode(file_get_contents($baza_pliki), true);
+        }
+        
+        // Dodajemy nowy film na początek listy
+        array_unshift($aktualne_filmy, [
+            'sciezka' => $docelowa_sciezka,
+            'opis' => $opis,
+            'data' => date('Y-m-d H:i')
+        ]);
+        
+        file_put_contents($baza_pliki, json_encode($aktualne_filmy));
+
+        echo json_encode(['status' => 'sukces', 'wiadomosc' => 'Film zapisany na domenie!']);
+    } else {
+        echo json_encode(['status' => 'blad', 'wiadomosc' => 'Nie udało się zapisać pliku w folderze serwera.']);
+    }
+} else {
+    echo json_encode(['status' => 'blad', 'wiadomosc' => 'Brak pliku wideo lub błąd przesyłania.']);
+}
+?>
