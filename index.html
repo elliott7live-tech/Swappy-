@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pl" translate="no" class="dark notranslate">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="google" content="notranslate" />
+    <meta http-equiv="Content-Language" content="pl" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0A0A0C" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Swappy" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <title>Swappy</title>
+    <meta name="description" content="Mobilna aplikacja społecznościowa z krótkimi filmami wideo w pionie, muzyką, komentarzami, kamerą twórcy i instalacją PWA z linku na każdym urządzeniu." />
+    <meta property="og:title" content="Swappy" />
+    <meta property="og:description" content="Mobilna aplikacja społecznościowa z krótkimi filmami wideo w pionie, muzyką, komentarzami, kamerą twórcy i instalacją PWA z linku na każdym urządzeniu." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <script>
+      window.__swappyDeferredPrompt = null;
+      window.__swappyInstalled = false;
+      (function () {
+        var inIframe = false;
+        try {
+          inIframe = window.self !== window.top;
+        } catch (err) {
+          inIframe = true;
+        }
+
+        var inApp = false;
+        if (!inIframe) {
+          try {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('pwa') === '1' || params.get('mode') === 'standalone') {
+              inApp = true;
+              try {
+                sessionStorage.setItem('swappy_running_in_app', '1');
+              } catch (err) {}
+              params.delete('pwa');
+              params.delete('mode');
+              var qs = params.toString();
+              var cleanUrl = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+              window.history.replaceState(null, '', cleanUrl);
+            } else if (sessionStorage.getItem('swappy_running_in_app') === '1') {
+              inApp = true;
+            }
+          } catch (err) {}
+
+          if (
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.matchMedia('(display-mode: fullscreen)').matches ||
+            window.matchMedia('(display-mode: minimal-ui)').matches ||
+            window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+            window.navigator.standalone === true ||
+            (document.referrer && document.referrer.indexOf('android-app://') === 0)
+          ) {
+            inApp = true;
+            try {
+              sessionStorage.setItem('swappy_running_in_app', '1');
+            } catch (err) {}
+          }
+        }
+
+        window.__swappyRunningInApp = inApp;
+      })();
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        window.__swappyDeferredPrompt = e;
+        window.dispatchEvent(new Event('swappy:beforeinstallprompt'));
+      });
+      window.addEventListener('appinstalled', function () {
+        window.__swappyDeferredPrompt = null;
+        window.__swappyInstalled = true;
+        window.dispatchEvent(new Event('swappy:appinstalled'));
+      });
+    </script>
+  </head>
+  <body translate="no" class="notranslate bg-[#0A0A0C] text-white antialiased selection:bg-[#FE2C55] selection:text-white overflow-hidden">
+    <div id="root" translate="no" class="notranslate"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

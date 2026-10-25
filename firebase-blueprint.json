@@ -1,0 +1,553 @@
+{
+  "entities": {
+    "PublicProfile": {
+      "title": "PublicProfile",
+      "description": "Public creator profile in Swappy containing zero PII.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the profile owner."
+        },
+        "handle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_.]+$",
+          "description": "Creator handle without @ prefix."
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Public display name shown on profile and videos."
+        },
+        "bio": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 160,
+          "description": "Short public creator biography."
+        },
+        "avatarColor": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 16,
+          "pattern": "^#[0-9a-fA-F]{3,8}$",
+          "description": "Hex accent color for avatar fallback."
+        },
+        "avatarUrl": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 600,
+          "pattern": "^(|/uploads/[a-zA-Z0-9_.\\-]+|https://.+)$",
+          "description": "Optional uploaded profile photo path or HTTPS avatar image URL."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public"],
+          "description": "Explicit visibility flag for query enforcement."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "uid",
+        "handle",
+        "displayName",
+        "bio",
+        "avatarColor",
+        "visibility",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "VideoPost": {
+      "title": "VideoPost",
+      "description": "User-submitted short vertical video post with attached song/sound metadata.",
+      "type": "object",
+      "properties": {
+        "authorId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the creator who owns this video."
+        },
+        "authorHandle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_.]+$",
+          "description": "Creator handle snapshot."
+        },
+        "authorName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Creator display name snapshot."
+        },
+        "authorAvatarColor": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 16,
+          "pattern": "^#[0-9a-fA-F]{3,8}$",
+          "description": "Creator avatar hex color."
+        },
+        "authorAvatarUrl": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 600,
+          "pattern": "^(|/uploads/[a-zA-Z0-9_.\\-]+|https://.+)$",
+          "description": "Optional creator profile photo URL snapshot."
+        },
+        "videoUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "^(/uploads/[a-zA-Z0-9_.\\-]+|https://.+)$",
+          "description": "Uploaded video path or HTTPS stream URL."
+        },
+        "caption": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 280,
+          "description": "Video caption text."
+        },
+        "hashtags": {
+          "type": "array",
+          "description": "Up to 8 hashtags associated with the video."
+        },
+        "musicTitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Song or sound title."
+        },
+        "musicArtist": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 80,
+          "description": "Optional artist name of the selected song."
+        },
+        "musicAudioUrl": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 600,
+          "description": "Optional public song preview URL or uploaded community audio path."
+        },
+        "musicCoverUrl": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 600,
+          "description": "Optional album cover image URL for the spinning vinyl disc."
+        },
+        "originalVolume": {
+          "type": "integer",
+          "description": "Original video audio volume (0 to 100)."
+        },
+        "musicVolume": {
+          "type": "integer",
+          "description": "Added background song volume (0 to 100)."
+        },
+        "overlayText": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 100,
+          "description": "Optional on-video text overlay."
+        },
+        "colorFilter": {
+          "type": "string",
+          "enum": ["normal", "warm", "cool", "vivid", "vintage", "neon", "mono"],
+          "description": "Color grading filter preset applied before publication."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "private"],
+          "description": "Visibility state enforced by Firestore list rules."
+        },
+        "likesCount": {
+          "type": "integer",
+          "description": "Atomically synchronized like counter."
+        },
+        "commentsCount": {
+          "type": "integer",
+          "description": "Atomically synchronized comment counter."
+        },
+        "lastCommentId": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 128,
+          "description": "ID of most recent comment for atomic batch verification."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when video was published."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest update."
+        }
+      },
+      "required": [
+        "authorId",
+        "authorHandle",
+        "authorName",
+        "authorAvatarColor",
+        "videoUrl",
+        "caption",
+        "hashtags",
+        "musicTitle",
+        "overlayText",
+        "visibility",
+        "likesCount",
+        "commentsCount",
+        "lastCommentId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PublicSound": {
+      "title": "PublicSound",
+      "description": "Community-shared public sound or audio clip reusable in Swappy videos.",
+      "type": "object",
+      "properties": {
+        "authorId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Creator UID who uploaded the sound."
+        },
+        "authorHandle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_.]+$",
+          "description": "Creator handle."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Sound title."
+        },
+        "artistName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Artist or creator display name."
+        },
+        "audioUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600,
+          "pattern": "^(/uploads/[a-zA-Z0-9_.\\-]+|https://.+)$",
+          "description": "Audio stream URL."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public"],
+          "description": "Public visibility flag for list enforcement."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        }
+      },
+      "required": [
+        "authorId",
+        "authorHandle",
+        "title",
+        "artistName",
+        "audioUrl",
+        "visibility",
+        "createdAt"
+      ]
+    },
+    "VideoComment": {
+      "title": "VideoComment",
+      "description": "User comment on a Swappy video post.",
+      "type": "object",
+      "properties": {
+        "videoId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Target video document ID."
+        },
+        "authorId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Comment author UID."
+        },
+        "authorHandle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 32,
+          "description": "Comment author handle."
+        },
+        "authorName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Comment author display name."
+        },
+        "authorAvatarColor": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 16,
+          "description": "Comment author avatar color."
+        },
+        "authorAvatarUrl": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 600,
+          "pattern": "^(|/uploads/[a-zA-Z0-9_.\\-]+|https://.+)$",
+          "description": "Optional comment author profile photo URL snapshot."
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240,
+          "description": "Comment body text."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public"],
+          "description": "Visibility marker for comment list query enforcement."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        }
+      },
+      "required": [
+        "videoId",
+        "authorId",
+        "authorHandle",
+        "authorName",
+        "authorAvatarColor",
+        "text",
+        "visibility",
+        "createdAt"
+      ]
+    },
+    "VideoLike": {
+      "title": "VideoLike",
+      "description": "Deterministic user like record (ID: {userId}_{videoId}).",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the user liking the video."
+        },
+        "videoId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Liked video ID."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        }
+      },
+      "required": ["userId", "videoId", "createdAt"]
+    },
+    "VideoBookmark": {
+      "title": "VideoBookmark",
+      "description": "Saved/bookmarked video record for a user (ID: {userId}_{videoId}).",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the user saving the video."
+        },
+        "videoId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Bookmarked video ID."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        }
+      },
+      "required": ["userId", "videoId", "createdAt"]
+    },
+    "CreatorFollow": {
+      "title": "CreatorFollow",
+      "description": "Follow edge between two creators (ID: {followerId}_{followingId}).",
+      "type": "object",
+      "properties": {
+        "followerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the follower."
+        },
+        "followingId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the creator being followed."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        }
+      },
+      "required": ["followerId", "followingId", "createdAt"]
+    },
+    "LiveStreamSession": {
+      "title": "LiveStreamSession",
+      "description": "Active or ended live video broadcast session in Swappy.",
+      "type": "object",
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the live broadcaster."
+        },
+        "hostHandle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_.]+$",
+          "description": "Broadcaster handle."
+        },
+        "hostName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Broadcaster display name."
+        },
+        "hostAvatarColor": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 16,
+          "pattern": "^#[0-9a-fA-F]{3,8}$",
+          "description": "Broadcaster avatar hex color."
+        },
+        "hostAvatarUrl": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 600,
+          "pattern": "^(|/uploads/[a-zA-Z0-9_.\\-]+|https://.+)$",
+          "description": "Optional broadcaster profile photo URL."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "description": "Live broadcast title."
+        },
+        "colorFilter": {
+          "type": "string",
+          "enum": ["normal", "warm", "cool", "vivid", "vintage", "neon", "mono"],
+          "description": "Live camera color filter."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public"],
+          "description": "Public visibility flag for list query enforcement."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["live", "ended"],
+          "description": "Lifecycle status with terminal lock on ended."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "hostId",
+        "hostHandle",
+        "hostName",
+        "hostAvatarColor",
+        "title",
+        "colorFilter",
+        "visibility",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/profiles/{userId}": {
+      "schema": { "$ref": "#/entities/PublicProfile" },
+      "description": "Public creator profiles indexed by Firebase Auth UID (no PII)."
+    },
+    "/videos/{videoId}": {
+      "schema": { "$ref": "#/entities/VideoPost" },
+      "description": "User-uploaded vertical videos with music tracks and atomic counters."
+    },
+    "/sounds/{soundId}": {
+      "schema": { "$ref": "#/entities/PublicSound" },
+      "description": "Community-uploaded public audio tracks reusable across videos."
+    },
+    "/comments/{commentId}": {
+      "schema": { "$ref": "#/entities/VideoComment" },
+      "description": "Comments linked to videos with atomic parent counter synchronization."
+    },
+    "/likes/{likeId}": {
+      "schema": { "$ref": "#/entities/VideoLike" },
+      "description": "User likes keyed deterministically as {userId}_{videoId}."
+    },
+    "/bookmarks/{bookmarkId}": {
+      "schema": { "$ref": "#/entities/VideoBookmark" },
+      "description": "User saved bookmarks keyed deterministically as {userId}_{videoId}."
+    },
+    "/follows/{followId}": {
+      "schema": { "$ref": "#/entities/CreatorFollow" },
+      "description": "User follow relationships keyed deterministically as {followerId}_{followingId}."
+    },
+    "/livestreams/{streamId}": {
+      "schema": { "$ref": "#/entities/LiveStreamSession" },
+      "description": "Public live broadcast sessions with terminal status locking."
+    }
+  }
+}

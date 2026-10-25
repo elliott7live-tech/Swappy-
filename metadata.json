@@ -1,0 +1,6 @@
+{
+  "name": "Swappy",
+  "description": "Mobilna aplikacja społecznościowa z krótkimi filmami wideo w pionie, muzyką, komentarzami, kamerą twórcy i instalacją PWA z linku na każdym urządzeniu.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

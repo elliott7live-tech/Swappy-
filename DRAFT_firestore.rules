@@ -1,0 +1,531 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidOptionalMediaUrl(url) {
+      return url is string && url.size() <= 600 && (
+        url == '' || url.matches('^(/uploads/[a-zA-Z0-9_.\\-]+|https://.+)$')
+      );
+    }
+
+    function isValidPublicProfile(data) {
+      return data.keys().hasAll([
+          'uid',
+          'handle',
+          'displayName',
+          'bio',
+          'avatarColor',
+          'visibility',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid',
+          'handle',
+          'displayName',
+          'bio',
+          'avatarColor',
+          'avatarUrl',
+          'visibility',
+          'createdAt',
+          'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.handle is string && data.handle.size() >= 2 && data.handle.size() <= 32 && data.handle.matches('^[a-zA-Z0-9_.]+$')
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 50
+        && data.bio is string && data.bio.size() <= 160
+        && data.avatarColor is string && data.avatarColor.size() >= 4 && data.avatarColor.size() <= 16 && data.avatarColor.matches('^#[0-9a-fA-F]{3,8}$')
+        && (!('avatarUrl' in data) || isValidOptionalMediaUrl(data.avatarUrl))
+        && data.visibility == 'public'
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidHashtags(tags) {
+      return tags is list
+        && tags.size() <= 8
+        && (tags.size() == 0 || (tags[0] is string && tags[0].size() >= 1 && tags[0].size() <= 32));
+    }
+
+    function isValidColorFilter(filterId) {
+      return filterId is string && filterId.size() <= 16 && filterId in [
+        'normal',
+        'warm',
+        'cool',
+        'vivid',
+        'vintage',
+        'neon',
+        'mono'
+      ];
+    }
+
+    function isValidVideoPost(data) {
+      return data.keys().hasAll([
+          'authorId',
+          'authorHandle',
+          'authorName',
+          'authorAvatarColor',
+          'videoUrl',
+          'caption',
+          'hashtags',
+          'musicTitle',
+          'overlayText',
+          'visibility',
+          'likesCount',
+          'commentsCount',
+          'lastCommentId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'authorId',
+          'authorHandle',
+          'authorName',
+          'authorAvatarColor',
+          'authorAvatarUrl',
+          'videoUrl',
+          'caption',
+          'hashtags',
+          'musicTitle',
+          'musicArtist',
+          'musicAudioUrl',
+          'musicCoverUrl',
+          'originalVolume',
+          'musicVolume',
+          'overlayText',
+          'colorFilter',
+          'visibility',
+          'likesCount',
+          'commentsCount',
+          'lastCommentId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && isValidId(data.authorId)
+        && data.authorHandle is string && data.authorHandle.size() >= 2 && data.authorHandle.size() <= 32 && data.authorHandle.matches('^[a-zA-Z0-9_.]+$')
+        && data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 50
+        && data.authorAvatarColor is string && data.authorAvatarColor.size() >= 4 && data.authorAvatarColor.size() <= 16 && data.authorAvatarColor.matches('^#[0-9a-fA-F]{3,8}$')
+        && (!('authorAvatarUrl' in data) || isValidOptionalMediaUrl(data.authorAvatarUrl))
+        && data.videoUrl is string && data.videoUrl.size() >= 1 && data.videoUrl.size() <= 500 && data.videoUrl.matches('^(/uploads/[a-zA-Z0-9_.\\-]+|https://.+)$')
+        && data.caption is string && data.caption.size() >= 1 && data.caption.size() <= 280
+        && isValidHashtags(data.hashtags)
+        && data.musicTitle is string && data.musicTitle.size() >= 1 && data.musicTitle.size() <= 80
+        && (!('musicArtist' in data) || (data.musicArtist is string && data.musicArtist.size() <= 80))
+        && (!('musicAudioUrl' in data) || isValidOptionalMediaUrl(data.musicAudioUrl))
+        && (!('musicCoverUrl' in data) || isValidOptionalMediaUrl(data.musicCoverUrl))
+        && (!('originalVolume' in data) || (data.originalVolume is number && data.originalVolume >= 0 && data.originalVolume <= 100))
+        && (!('musicVolume' in data) || (data.musicVolume is number && data.musicVolume >= 0 && data.musicVolume <= 100))
+        && data.overlayText is string && data.overlayText.size() <= 100
+        && (!('colorFilter' in data) || isValidColorFilter(data.colorFilter))
+        && data.visibility in ['public', 'private']
+        && data.likesCount is int && data.likesCount >= 0
+        && data.commentsCount is int && data.commentsCount >= 0
+        && data.lastCommentId is string && data.lastCommentId.size() <= 128
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPublicSound(data) {
+      return data.keys().hasAll([
+          'authorId',
+          'authorHandle',
+          'title',
+          'artistName',
+          'audioUrl',
+          'visibility',
+          'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'authorId',
+          'authorHandle',
+          'title',
+          'artistName',
+          'audioUrl',
+          'visibility',
+          'createdAt'
+        ])
+        && isValidId(data.authorId)
+        && data.authorId == request.auth.uid
+        && data.authorHandle is string && data.authorHandle.size() >= 2 && data.authorHandle.size() <= 32 && data.authorHandle.matches('^[a-zA-Z0-9_.]+$')
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 80
+        && data.artistName is string && data.artistName.size() >= 1 && data.artistName.size() <= 80
+        && data.audioUrl is string && data.audioUrl.size() >= 1 && data.audioUrl.size() <= 600 && data.audioUrl.matches('^(/uploads/[a-zA-Z0-9_.\\-]+|https://.+)$')
+        && data.visibility == 'public'
+        && data.createdAt is timestamp;
+    }
+
+    function isValidLiveStreamSession(data) {
+      return data.keys().hasAll([
+          'hostId',
+          'hostHandle',
+          'hostName',
+          'hostAvatarColor',
+          'title',
+          'colorFilter',
+          'visibility',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'hostId',
+          'hostHandle',
+          'hostName',
+          'hostAvatarColor',
+          'hostAvatarUrl',
+          'title',
+          'colorFilter',
+          'visibility',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ])
+        && isValidId(data.hostId)
+        && data.hostId == request.auth.uid
+        && data.hostHandle is string && data.hostHandle.size() >= 2 && data.hostHandle.size() <= 32 && data.hostHandle.matches('^[a-zA-Z0-9_.]+$')
+        && data.hostName is string && data.hostName.size() >= 1 && data.hostName.size() <= 50
+        && data.hostAvatarColor is string && data.hostAvatarColor.size() >= 4 && data.hostAvatarColor.size() <= 16 && data.hostAvatarColor.matches('^#[0-9a-fA-F]{3,8}$')
+        && (!('hostAvatarUrl' in data) || isValidOptionalMediaUrl(data.hostAvatarUrl))
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 90
+        && isValidColorFilter(data.colorFilter)
+        && data.visibility == 'public'
+        && data.status in ['live', 'ended']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidVideoComment(data) {
+      return data.keys().hasAll([
+          'videoId',
+          'authorId',
+          'authorHandle',
+          'authorName',
+          'authorAvatarColor',
+          'text',
+          'visibility',
+          'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'videoId',
+          'authorId',
+          'authorHandle',
+          'authorName',
+          'authorAvatarColor',
+          'authorAvatarUrl',
+          'text',
+          'visibility',
+          'createdAt'
+        ])
+        && isValidId(data.videoId)
+        && isValidId(data.authorId)
+        && data.authorId == request.auth.uid
+        && data.authorHandle is string && data.authorHandle.size() >= 2 && data.authorHandle.size() <= 32 && data.authorHandle.matches('^[a-zA-Z0-9_.]+$')
+        && data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 50
+        && data.authorAvatarColor is string && data.authorAvatarColor.size() >= 4 && data.authorAvatarColor.size() <= 16 && data.authorAvatarColor.matches('^#[0-9a-fA-F]{3,8}$')
+        && (!('authorAvatarUrl' in data) || isValidOptionalMediaUrl(data.authorAvatarUrl))
+        && data.text is string && data.text.size() >= 1 && data.text.size() <= 240
+        && data.visibility == 'public'
+        && data.createdAt is timestamp;
+    }
+
+    function isValidVideoLike(data) {
+      return data.keys().hasAll(['userId', 'videoId', 'createdAt'])
+        && data.keys().hasOnly(['userId', 'videoId', 'createdAt'])
+        && isValidId(data.userId)
+        && data.userId == request.auth.uid
+        && isValidId(data.videoId)
+        && data.createdAt is timestamp;
+    }
+
+    function isValidVideoBookmark(data) {
+      return data.keys().hasAll(['userId', 'videoId', 'createdAt'])
+        && data.keys().hasOnly(['userId', 'videoId', 'createdAt'])
+        && isValidId(data.userId)
+        && data.userId == request.auth.uid
+        && isValidId(data.videoId)
+        && data.createdAt is timestamp;
+    }
+
+    function isValidCreatorFollow(data) {
+      return data.keys().hasAll(['followerId', 'followingId', 'createdAt'])
+        && data.keys().hasOnly(['followerId', 'followingId', 'createdAt'])
+        && isValidId(data.followerId)
+        && data.followerId == request.auth.uid
+        && isValidId(data.followingId)
+        && data.followerId != data.followingId
+        && data.createdAt is timestamp;
+    }
+
+    match /profiles/{userId} {
+      allow get: if isValidId(userId) && (resource == null || existing().visibility == 'public');
+      allow list: if existing().visibility == 'public';
+
+      allow create: if isVerifiedUser()
+        && isValidId(userId)
+        && userId == request.auth.uid
+        && isValidPublicProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser()
+        && isValidId(userId)
+        && userId == request.auth.uid
+        && isValidPublicProfile(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'handle',
+          'displayName',
+          'bio',
+          'avatarColor',
+          'avatarUrl',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    match /videos/{videoId} {
+      allow get: if isValidId(videoId) && (
+        resource == null ||
+        existing().visibility == 'public' ||
+        (isSignedIn() && existing().authorId == request.auth.uid)
+      );
+
+      allow list: if existing().visibility == 'public' ||
+        (isSignedIn() && existing().authorId == request.auth.uid);
+
+      allow create: if isVerifiedUser()
+        && isValidId(videoId)
+        && isValidVideoPost(incoming())
+        && incoming().authorId == request.auth.uid
+        && incoming().likesCount == 0
+        && incoming().commentsCount == 0
+        && incoming().lastCommentId == ''
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/profiles/$(request.auth.uid));
+
+      allow update: if isVerifiedUser()
+        && isValidId(videoId)
+        && isValidVideoPost(incoming())
+        && incoming().authorId == existing().authorId
+        && incoming().videoUrl == existing().videoUrl
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          (
+            existing().authorId == request.auth.uid
+            && incoming().likesCount == existing().likesCount
+            && incoming().commentsCount == existing().commentsCount
+            && incoming().lastCommentId == existing().lastCommentId
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'caption',
+              'hashtags',
+              'musicTitle',
+              'musicArtist',
+              'musicAudioUrl',
+              'musicCoverUrl',
+              'originalVolume',
+              'musicVolume',
+              'overlayText',
+              'colorFilter',
+              'visibility',
+              'updatedAt'
+            ])
+          )
+          ||
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['likesCount', 'updatedAt'])
+            && incoming().likesCount == existing().likesCount + 1
+            && !exists(/databases/$(database)/documents/likes/$(request.auth.uid + '_' + videoId))
+            && existsAfter(/databases/$(database)/documents/likes/$(request.auth.uid + '_' + videoId))
+          )
+          ||
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['likesCount', 'updatedAt'])
+            && existing().likesCount > 0
+            && incoming().likesCount == existing().likesCount - 1
+            && exists(/databases/$(database)/documents/likes/$(request.auth.uid + '_' + videoId))
+            && !existsAfter(/databases/$(database)/documents/likes/$(request.auth.uid + '_' + videoId))
+          )
+          ||
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['commentsCount', 'lastCommentId', 'updatedAt'])
+            && incoming().commentsCount == existing().commentsCount + 1
+            && isValidId(incoming().lastCommentId)
+            && !exists(/databases/$(database)/documents/comments/$(incoming().lastCommentId))
+            && existsAfter(/databases/$(database)/documents/comments/$(incoming().lastCommentId))
+            && getAfter(/databases/$(database)/documents/comments/$(incoming().lastCommentId)).data.videoId == videoId
+            && getAfter(/databases/$(database)/documents/comments/$(incoming().lastCommentId)).data.authorId == request.auth.uid
+          )
+        );
+
+      allow delete: if isVerifiedUser()
+        && isValidId(videoId)
+        && existing().authorId == request.auth.uid;
+    }
+
+    match /sounds/{soundId} {
+      allow get: if isValidId(soundId) && (resource == null || existing().visibility == 'public');
+      allow list: if existing().visibility == 'public';
+
+      allow create: if isVerifiedUser()
+        && isValidId(soundId)
+        && isValidPublicSound(incoming())
+        && incoming().createdAt == request.time
+        && exists(/databases/$(database)/documents/profiles/$(request.auth.uid));
+
+      allow update: if false;
+
+      allow delete: if isVerifiedUser()
+        && isValidId(soundId)
+        && existing().authorId == request.auth.uid;
+    }
+
+    match /livestreams/{streamId} {
+      allow get: if isValidId(streamId) && (resource == null || existing().visibility == 'public');
+      allow list: if existing().visibility == 'public';
+
+      allow create: if isVerifiedUser()
+        && isValidId(streamId)
+        && isValidLiveStreamSession(incoming())
+        && incoming().hostId == request.auth.uid
+        && incoming().status == 'live'
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/profiles/$(request.auth.uid));
+
+      allow update: if isVerifiedUser()
+        && isValidId(streamId)
+        && isValidLiveStreamSession(incoming())
+        && existing().hostId == request.auth.uid
+        && existing().status == 'live'
+        && incoming().hostId == existing().hostId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'title',
+          'colorFilter',
+          'status',
+          'updatedAt'
+        ]);
+
+      allow delete: if isVerifiedUser()
+        && isValidId(streamId)
+        && existing().hostId == request.auth.uid;
+    }
+
+    match /comments/{commentId} {
+      allow get: if isValidId(commentId) && (resource == null || existing().visibility == 'public');
+      allow list: if existing().visibility == 'public';
+
+      allow create: if isVerifiedUser()
+        && isValidId(commentId)
+        && isValidVideoComment(incoming())
+        && incoming().createdAt == request.time
+        && exists(/databases/$(database)/documents/profiles/$(request.auth.uid))
+        && exists(/databases/$(database)/documents/videos/$(incoming().videoId))
+        && get(/databases/$(database)/documents/videos/$(incoming().videoId)).data.visibility == 'public'
+        && getAfter(/databases/$(database)/documents/videos/$(incoming().videoId)).data.commentsCount ==
+           get(/databases/$(database)/documents/videos/$(incoming().videoId)).data.commentsCount + 1
+        && getAfter(/databases/$(database)/documents/videos/$(incoming().videoId)).data.lastCommentId == commentId;
+
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    match /likes/{likeId} {
+      allow get: if isValidId(likeId) && isSignedIn() && (resource == null || existing().userId == request.auth.uid);
+      allow list: if isSignedIn() && existing().userId == request.auth.uid;
+
+      allow create: if isVerifiedUser()
+        && isValidId(likeId)
+        && isValidVideoLike(incoming())
+        && likeId == request.auth.uid + '_' + incoming().videoId
+        && incoming().createdAt == request.time
+        && exists(/databases/$(database)/documents/videos/$(incoming().videoId))
+        && getAfter(/databases/$(database)/documents/videos/$(incoming().videoId)).data.likesCount ==
+           get(/databases/$(database)/documents/videos/$(incoming().videoId)).data.likesCount + 1;
+
+      allow update: if false;
+
+      allow delete: if isVerifiedUser()
+        && isValidId(likeId)
+        && existing().userId == request.auth.uid
+        && likeId == request.auth.uid + '_' + existing().videoId
+        && getAfter(/databases/$(database)/documents/videos/$(existing().videoId)).data.likesCount ==
+           get(/databases/$(database)/documents/videos/$(existing().videoId)).data.likesCount - 1;
+    }
+
+    match /bookmarks/{bookmarkId} {
+      allow get: if isValidId(bookmarkId) && isSignedIn() && (resource == null || existing().userId == request.auth.uid);
+      allow list: if isSignedIn() && existing().userId == request.auth.uid;
+
+      allow create: if isVerifiedUser()
+        && isValidId(bookmarkId)
+        && isValidVideoBookmark(incoming())
+        && bookmarkId == request.auth.uid + '_' + incoming().videoId
+        && incoming().createdAt == request.time
+        && exists(/databases/$(database)/documents/videos/$(incoming().videoId));
+
+      allow update: if false;
+
+      allow delete: if isVerifiedUser()
+        && isValidId(bookmarkId)
+        && existing().userId == request.auth.uid;
+    }
+
+    match /follows/{followId} {
+      allow get: if isValidId(followId) && isSignedIn() && (
+        resource == null ||
+        existing().followerId == request.auth.uid ||
+        existing().followingId == request.auth.uid
+      );
+      allow list: if isSignedIn() && (
+        existing().followerId == request.auth.uid ||
+        existing().followingId == request.auth.uid
+      );
+
+      allow create: if isVerifiedUser()
+        && isValidId(followId)
+        && isValidCreatorFollow(incoming())
+        && followId == request.auth.uid + '_' + incoming().followingId
+        && incoming().createdAt == request.time
+        && exists(/databases/$(database)/documents/profiles/$(request.auth.uid));
+
+      allow update: if false;
+
+      allow delete: if isVerifiedUser()
+        && isValidId(followId)
+        && existing().followerId == request.auth.uid;
+    }
+  }
+}
