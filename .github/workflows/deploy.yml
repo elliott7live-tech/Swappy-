@@ -1,54 +1,15 @@
-name: Build and Deploy Swappy
+<div id="panel-wysylania">
+    <h3>Dodaj nowy film na Swappy 🚀</h3>
+    
+    <p>Wybierz wideo z telefonu:</p>
+    <input type="file" id="wideo-plik" accept="video/*">
+    
+    <p>Dodaj opis (np. #streetwear):</p>
+    <input type="text" id="wideo-opis" placeholder="Napisz coś...">
+    
+    <button id="przycisk-wyslij">Wyślij film na Swappy</button>
+    <p id="status-wysylki"></p>
+</div>
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get source
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build app
-        run: npm run build
-        env:
-          VITE_BASE_PATH: /Swappy-/
-
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-
+<h2>Najnowsze filmy na Swappy 👇</h2>
+<div id="swappy-feed"></div>
